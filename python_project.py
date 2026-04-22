@@ -5,28 +5,38 @@ locations = {}        # 예: {"강남": (10.5, 20.2), "판교": (30.0, 45.5)}
 
 # --- 예외 처리 보조 함수  ---
 def is_valid_num(num):
+
     check_num = num
+
     if len(check_num) > 0:
         if check_num.count('-') > 1 or check_num.count('.') > 1:
             print("잘못된 형식입니다.")
+            return None
+
         else:
             if check_num.startswith('-'):
-                check_num = check_num.lstrip('-')
+                check_num = check_num[1:]
 
                 if check_num.replace('.','').isdigit():
                     num = float(num)
+                    return num
+
                 else:
-                    num = None
                     print("잘못된 형식입니다.")
+                    return None
 
             else:
                 if check_num.replace('.','').isdigit():
                     num = float(num)
+                    return num
+
                 else:
-                    num = None
                     print("잘못된 형식입니다.")
+                    return None
+
     else:
         print("아무것도 입력되지 않았습니다.")
+        return None
 
 # try:
 #     num = float(input())
@@ -36,13 +46,37 @@ def is_valid_num(num):
 
 # --- 모드 1: 로봇 등록 ---
 def register_robot():
-    """
-    힌트:
-    1. input()으로 이름과 초기 배터리 입력받기
-    2. 배터리 입력이 숫자인지 is_valid_num으로 검증
-    3. robot_info 딕셔너리에 저장
-    """
-    pass
+    while True:
+        robot_name = input("로봇 이름을 입력하세요: ")
+
+        if not robot_name:
+            print("입력되지 않았습니다. 다시 입력하세요.")
+            continue
+
+        if robot_name.lower() == 'x':
+            print("계산을 종료합니다.")
+            break
+        
+        robot_battery = input("로봇의 배터리 용량을 입력하세요: ")
+        
+        if not robot_battery:
+            print("입력되지 않았습니다. 다시 입력하세요.")
+            continue
+
+        if robot_battery.lower() == 'x':
+            print("계산을 종료합니다.")
+            break
+
+        if robot_battery.startswith('-'):
+            print("음수를 입력하셨습니다.")
+            continue
+
+        robot_battery = is_valid_num(robot_battery)
+
+        robot_info[robot_name] = robot_battery
+
+register_robot()
+print(robot_info)
 
 # --- 모드 2: 장소 등록 ---
 def register_location():
