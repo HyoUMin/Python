@@ -106,7 +106,12 @@ def start_driving(robot ,start_node, end_node, *waypoints):
 
     total_path = [start_node] + list(waypoints) + [end_node]
     current_battery = robot_info[robot]
+    init_current_battery = current_battery
     total_distance = 0
+
+    for i in range(len(total_path) - 1):
+        u, v = total_path[i], total_path[i+1]
+        print(f"\n[ {u} ] " + "=" * 10 + ">" + f" [ {v} ] 이동 중...")
 
     for i in range(len(total_path) - 1):
 
@@ -125,15 +130,14 @@ def start_driving(robot ,start_node, end_node, *waypoints):
             return
         
     robot_info[robot] = current_battery 
-    
 
     print("-" * 30)
     print(f"목적지 '{end_node}' 도착 완료!")
-    print(f"총 주행 거리: {total_distance:.2f}m")
-    print(f"최종 남은 배터리: {max(0, current_battery):.2f}mAh") 
+    print(f"{robot} 총 주행 거리: {total_distance:.2f}m")
+    print(f"{robot} 배터리: {init_current_battery} -> {current_battery:.2f}mAh") 
 
     print("\n[최종 주행 경로]")
-    print("[출발]" + " -> ".join(total_path) + "[도착]")
+    print("[출발] " + " -> ".join(total_path) + " [도착]")
     
 # --- 메인 루프 (Main Menu) ---
 def main():
