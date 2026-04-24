@@ -139,6 +139,9 @@ def start_driving(robot ,start_node, end_node, *waypoints):
     print("\n[최종 주행 경로]")
     print("[출발] " + " -> ".join(total_path) + " [도착]")
     
+    robot_info[robot] = init_current_battery
+
+    
 # --- 메인 루프 (Main Menu) ---
 def main():
     while True:
