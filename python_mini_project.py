@@ -135,7 +135,7 @@ def start_driving(robot ,start_node, end_node, *waypoints):
 
         if current_battery < 0:
             print("배터리가 방전되어 목적지에 도착하지 못했습니다.")
-            robot_info[robot] = init_current_battery
+            robot_info[robot] = 0
             return
         
     robot_info[robot] = current_battery 
@@ -230,7 +230,7 @@ def main():
 
                         match waypoints_exist:
                             case 1:
-                                waypoints_list = input("경유지를 입력하세요(입력 예시: 대구 포항 울산): ").split()
+                                waypoints_list = input("경유지를 입력하세요(입력 예시: 대구 포항 울산): ").split().strip()
                                 if start_node in waypoints_list or end_node in waypoints_list:
                                     print("경유지가 중복 입력되었습니다.")
                                     continue
@@ -281,7 +281,7 @@ def main():
                     case 6:
                         print("시스템을 종료합니다.\n")
                         break
-                    
+                
                     case _:
                         print("잘못된 형식입니다.\n")
                         continue
