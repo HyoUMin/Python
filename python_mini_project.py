@@ -230,7 +230,7 @@ def main():
 
                         match waypoints_exist:
                             case 1:
-                                waypoints_list = input("경유지를 입력하세요(입력 예시: 대구 포항 울산): ").split().strip()
+                                waypoints_list = input("경유지를 입력하세요(입력 예시: 대구 포항 울산): ").split()
                                 if start_node in waypoints_list or end_node in waypoints_list:
                                     print("경유지가 중복 입력되었습니다.")
                                     continue
