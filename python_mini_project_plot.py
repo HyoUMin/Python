@@ -1,0 +1,334 @@
+import math as m
+import matplotlib.pyplot as plt
+
+BATTERY_PER_METER = 10
+print("====== MINI PROJECT ======")
+# 모드 1, 2에서 입력받은 데이터가 저장될 공간
+robot_info = {}       # 예: {"에이로봇": 200, "KDT로봇": 100.0}
+locations = {}        # 예: {"강남": (10.5, 20.2), "판교": (30.0, 45.5)}
+
+
+# --- 예외 처리 보조 함수  ---
+def is_valid_num(num):
+
+    check_num = num
+    # 빈 문자열 입력 체크
+    if len(check_num) > 0:
+        # '--3', '2.32.'와 같은 형식 예외 처리
+        if check_num.count('-') > 1 or check_num.count('.') > 1:
+            print("잘못된 형식입니다.\n")
+            return None
+
+        else:
+            # '-'로 시작시(음수) index[1]부터 가져와서 양수로 처리
+            if check_num.startswith('-'):
+                check_number = check_num[1:]
+            else:
+                check_number = check_num
+
+            if check_number.replace('.','').isdigit() and check_number != "":
+                num = float(num)
+                return num
+
+            else:
+                print("잘못된 형식입니다.\n")
+                return None
+
+    else:
+        print("아무것도 입력되지 않았습니다.\n")
+        return None
+
+# --- 모드 1: 로봇 등록 ---
+def register_robot():
+    while True:
+        robot_name = input("로봇 이름을 입력하세요: ")
+
+        if not robot_name:
+            print("입력되지 않았습니다. 다시 입력하세요.\n")
+            continue
+
+        if robot_name.lower() == 'x':
+            print("입력을 종료합니다.\n")
+            break
+        
+        robot_battery = input("로봇의 배터리 용량을 입력하세요(단위: mAh): ")
+        
+        if not robot_battery:
+            print("입력되지 않았습니다. 다시 입력하세요.\n")
+            continue
+
+        if robot_battery.lower() == 'x':
+            print("입력을 종료합니다.\n")
+            break
+
+        if robot_battery.startswith('-'):
+            print("음수를 입력하셨습니다.\n")
+            continue
+
+        robot_battery = is_valid_num(robot_battery)
+
+        robot_info[robot_name] = robot_battery
+
+    print("등록된 로봇 >>>")  
+    for u, v in robot_info.items():
+        print(f"| 로봇 이름: {u}, 배터리 용량: {v:.2f}mAh", end=" | ")
+        print()
+    print()
+
+# --- 모드 2: 장소 등록 ---
+def register_location():
+
+    while True:
+        loc = input("장소를 입력하세요: ")
+
+        if not loc:
+            print("장소가 입력되지 않았습니다.\n")
+            continue
+        # 'X'입력했을 시 'x'로 변경 후 비교
+        if loc.lower() == 'x':
+            print("입력을 종료합니다.\n")
+            break
+        
+        loc_x = input("위치(x 좌표)를 입력하세요: ")
+        loc_y = input("위치(y 좌표)를 입력하세요: ")
+
+        if not loc_x or not loc_y:
+            print("입력되지 않았습니다. 다시 입력하세요.\n")
+            continue
+        # 'X'입력했을 시 'x'로 변경 후 비교
+        if loc_x.lower() == 'x' or loc_y.lower() == 'x':
+            print("입력을 종료합니다.\n")
+            break
+
+        loc_x = is_valid_num(loc_x)
+        loc_y = is_valid_num(loc_y)
+
+        loc_tuple = loc_x, loc_y
+        locations[loc] = loc_tuple
+
+    print("등록된 장소 >>>")  
+    for u, v in locations.items():
+        print(f"| 장소 이름: {u}, XY 좌표: {v}m", end=" | ")
+        print()
+
+    print()
+
+# --- 모드 4: 주행 시작 (가변 매개변수 *waypoints 사용) ---
+def start_driving(robot ,start_node, end_node, *waypoints):
+
+    total_path = [start_node] + list(waypoints) + [end_node]
+    current_battery = robot_info[robot]
+    init_current_battery = current_battery
+    total_distance = 0
+
+    # 시각화를 위한 좌표 데이터 수집
+    path_x = []
+    path_y = []
+
+    for i in range(len(total_path) - 1):
+
+        now_, next_ = total_path[i], total_path[i+1]
+        print(f"\n[ {now_} ] " + "=" * 10 + ">" + f" [ {next_} ] 이동 중...")
+
+        x1, y1 = locations[total_path[i]]
+        x2, y2 = locations[total_path[i + 1]]
+        
+        # 시작점 좌표 추가 (첫 루프에서만)
+        if i == 0:
+            path_x.append(x1)
+            path_y.append(y1)
+        
+        # 다음 지점 좌표 추가
+        path_x.append(x2)
+        path_y.append(y2)
+
+        # 유클리드 거리 계산(가장 짧은 경로 찾기)
+        distance = m.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+        total_distance += distance    
+
+        consumed = distance * BATTERY_PER_METER
+        current_battery -= consumed
+
+        if current_battery < 0:
+            print("배터리가 방전되어 목적지에 도착하지 못했습니다.")
+            robot_info[robot] = 0
+            return
+        
+    robot_info[robot] = current_battery 
+
+    print("-" * 30)
+    print(f"목적지 '{end_node}' 도착 완료!")
+
+    # --- 시각화 로직 시작 ---
+    plt.figure(figsize=(8, 6))
+    # 경로 선 그리기
+    plt.plot(path_x, path_y, marker='o', color='b', linestyle='--', linewidth=2, markersize=8)
+    
+    # 각 지점 이름 표시
+    for i, node_name in enumerate(total_path):
+        plt.text(path_x[i] + 0.2, path_y[i] + 0.2, node_name, fontsize=12, fontweight='bold')
+    
+    # 그래프 설정
+    plt.title(f"Robot Path: {robot}", fontsize=15)
+    plt.xlabel("X Coordinate (m)")
+    plt.ylabel("Y Coordinate (m)")
+    plt.grid(True, linestyle=':', alpha=0.7)
+    plt.axhline(0, color='black', linewidth=1)
+    plt.axvline(0, color='black', linewidth=1)
+    
+    # 출발지는 초록색, 도착지는 빨간색 강조
+    plt.plot(path_x[0], path_y[0], 'go', markersize=10, label='Start')
+    plt.plot(path_x[-1], path_y[-1], 'ro', markersize=10, label='End')
+    plt.legend()
+    
+    print("주행 궤적 그래프를 출력합니다...")
+    plt.show()
+
+    print(f"{robot} 총 주행 거리: {total_distance:.2f}m")
+    print(f"{robot} 배터리: {init_current_battery} -> {current_battery:.2f}mAh") 
+
+    print("\n[최종 주행 경로]")
+    print("[출발] " + " -> ".join(total_path) + " [도착]")
+
+def del_info():
+    try:
+        remove_info = int(input("로봇을 등록 해제하려면 1, 장소를 등록 해제하려면 2를 누르세요: "))
+
+        if remove_info == 1:
+            robot_name = input("등록 해제할 로봇의 이름을 입력하세요: ")
+            if robot_name in robot_info:
+                robot_info.pop(robot_name)
+                print(f"{robot_name}은(는) 등록 해제되었습니다.\n")
+            else:  
+                print("등록된 정보가 없습니다.\n")
+
+        elif remove_info == 2:
+            loc_name = input("등록 해제할 장소의 이름을 입력하세요: ")
+            if loc_name in locations:
+                locations.pop(loc_name)
+                print(f"{loc_name}은(는) 등록 해제되었습니다.\n")
+            else:
+                print("등록된 정보가 없습니다.\n")
+        else:
+            print("잘못된 번호를 입력하셨습니다.\n")
+
+    except ValueError:
+        print("잘못된 형식입니다.\n")
+
+
+
+# --- 메인 루프 (Main Menu) ---
+def main():
+    while True:
+        print("\n=== 로봇 주행 시스템 메뉴 ===\n")
+        print("1. 로봇 등록")
+        print("2. 장소 등록")
+        print("3. 경로 설정 및 주행")
+        print("4. 로봇 및 장소 등록 해제")
+        print("5. 등록된 로봇 및 장소 확인") 
+        print("6. 시스템 종료")
+        print("\n참고: 주행거리 1m당 배터리 10mAh 소모")
+        print("\n===========================\n\n")
+
+        try:
+            choice = int(input("원하는 모드를 선택하세요: "))
+            print()
+
+            match choice:
+                    case 1:
+                        print("==== 로봇 등록 ====")
+                        register_robot()
+                    
+                    case 2:
+                        print("==== 장소 등록 ====")
+                        register_location()
+
+                    case 3:
+                        print("==== 경로 설정 및 주행 ====")
+                        
+                        robot = input("주행시킬 로봇을 선택하세요: ")
+                        if robot not in robot_info:
+                            print("등록되지 않은 로봇입니다. 저장 후 선택하세요.\n")
+                            continue
+                            
+                        start_node = input("출발 장소를 선택하세요: ")
+                        if start_node not in locations:
+                            print("등록되지 않은 장소입니다. 저장 후 선택하세요.\n")
+                            continue
+
+                        end_node = input("도착 장소를 선택하세요: ")
+
+                        if end_node not in locations:
+                            print("등록되지 않은 장소입니다. 저장 후 선택하세요.\n")
+                            continue
+
+                        if start_node == end_node:
+                            print("출발 장소와 도착 장소가 같습니다.")
+                            continue
+
+                        waypoints_exist = int(input("경유지를 설정하세요.(1: 설정, 2: 종료): "))
+
+                        waypoints_list = []
+
+                        match waypoints_exist:
+                            case 1:
+                                waypoints_list = input("경유지를 입력하세요(입력 예시: 대구 포항 울산): ").split().strip()
+                                if start_node in waypoints_list or end_node in waypoints_list:
+                                    print("경유지가 중복 입력되었습니다.")
+                                    continue
+                                else:
+                                    can_drive = True
+                                    for i in waypoints_list:
+                                        
+                                        if i not in locations:
+                                            print("등록되지 않은 장소입니다. 저장 후 선택하세요.\n")
+                                            can_drive = False
+                                            break
+
+                                    if not can_drive:
+                                        continue
+                            case 2:
+                                print("경유지 설정을 종료합니다.\n")
+                                pass
+                            case _:
+                                print("잘못된 형식입니다.\n")
+                                continue
+
+                        start_driving(robot, start_node, end_node, *waypoints_list)
+
+                    case 4:
+                        print("==== 등록 해제 ====")
+                        del_info()
+
+                    case 5:
+                        print("==== 확인 하기 ====")
+                        if not robot_info:
+                            print("등록된 로봇 정보가 없습니다.")    
+                        else:
+                            print("로봇 정보 >>>")  
+                            for u, v in robot_info.items():
+                                print(f"| 로봇 이름: {u}, 배터리 용량: {v:.2f}mAh", end=" | ")
+                                print()
+                        print()
+
+                        if not locations:
+                            print("등록된 장소 정보가 없습니다.")    
+                        else:
+                            print("장소 정보 >>>")  
+                            for u, v in locations.items():
+                                print(f"| 장소 이름: {u}, XY 좌표: {v}m", end=" | ")
+                                print()
+                        print()
+
+                    case 6:
+                        print("시스템을 종료합니다.\n")
+                        break
+                
+                    case _:
+                        print("잘못된 형식입니다.\n")
+                        continue
+        except ValueError:
+            print("잘못된 형식입니다.\n")
+
+if __name__ == "__main__":
+    main()
