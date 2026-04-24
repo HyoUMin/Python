@@ -90,7 +90,7 @@ def register_location():
         loc_x = input("위치(x 좌표)를 입력하세요: ")
         loc_y = input("위치(y 좌표)를 입력하세요: ")
 
-        if not loc_x and loc_y:
+        if not loc_x or not loc_y:
             print("입력되지 않았습니다. 다시 입력하세요.\n")
             continue
         # 'X'입력했을 시 'x'로 변경 후 비교
