@@ -69,7 +69,7 @@ def register_robot():
 
     print("등록된 로봇 >>>")  
     for u, v in robot_info.items():
-        print(f"| 로봇 이름: {u}, 배터리 용량: {v}mAh", end=" | ")
+        print(f"| 로봇 이름: {u}, 배터리 용량: {v:.2f}mAh", end=" | ")
         print()
     print()
 
@@ -265,7 +265,7 @@ def main():
                         else:
                             print("로봇 정보 >>>")  
                             for u, v in robot_info.items():
-                                print(f"| 로봇 이름: {u}, 배터리 용량: {v}mAh", end=" | ")
+                                print(f"| 로봇 이름: {u}, 배터리 용량: {v:.2f}mAh", end=" | ")
                                 print()
                         print()
 
