@@ -39,7 +39,7 @@ def is_valid_num(num):
 # --- 모드 1: 로봇 등록 ---
 def register_robot():
     while True:
-        robot_name = input("로봇 이름을 입력하세요: ")
+        robot_name = input("로봇 이름을 입력하세요(X를 누르면 등록을 종료합니다.): ")
 
         if not robot_name:
             print("입력되지 않았습니다. 다시 입력하세요.\n")
@@ -77,7 +77,7 @@ def register_robot():
 def register_location():
 
     while True:
-        loc = input("장소를 입력하세요: ")
+        loc = input("장소를 입력하세요(X를 누르면 등록을 종료합니다.): ")
 
         if not loc:
             print("장소가 입력되지 않았습니다.\n")
